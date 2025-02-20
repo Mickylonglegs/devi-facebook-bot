@@ -18,8 +18,9 @@ def webhook():
         post_text = data.get("post_text", "")
         post_id = data.get("post_id", "")
 
-        if not post_text or not post_id:
-            return jsonify({"status": "error", "message": "Missing post_text or post_id"}), 400
+       if not post_text or not post_id:
+    return jsonify({"status": "success", "message": "Test request received - missing data ignored"}), 200
+
 
         # Since you don't have a Devi API Key, we'll just return success.
         print(f"Received Post: {post_text} | Post ID: {post_id}")

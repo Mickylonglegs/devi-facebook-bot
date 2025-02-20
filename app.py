@@ -12,17 +12,19 @@ def home():
 @app.route("/webhook", methods=["POST"])
 def webhook():
     try:
-        data = request.json
+        data = request.json  # Get the JSON payload
+        print("Received Data from Devi AI:", data)  # Log full payload
+
         post_text = data.get("post_text", "")
         post_id = data.get("post_id", "")
 
         if not post_text or not post_id:
-            return jsonify({"status": "error", "message": "Missing post_text or post_id"}), 400
+            return jsonify({"status": "error", "message": "Missing post_text or post_id", "received_data": data}), 400
 
-        print(f"Received Post: {post_text} | Post ID: {post_id}")
+        print(f"Extracted Post: {post_text} | Post ID: {post_id}")
 
         response = jsonify({"status": "success", "message": "Webhook received successfully"})
-        response.headers["Content-Type"] = "application/json"  # Ensure correct response format
+        response.headers["Content-Type"] = "application/json"
         return response, 200
 
     except Exception as e:

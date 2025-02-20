@@ -1,35 +1,24 @@
-import os
-from flask import Flask, request, jsonify
-from flask_cors import CORS
-
-app = Flask(__name__)
-CORS(app)  # Enable CORS
-
-@app.route("/", methods=["GET"])
-def home():
-    return jsonify({"status": "success", "message": "Webhook is running"}), 200
-
 @app.route("/webhook", methods=["POST"])
 def webhook():
     try:
-        data = request.json  # Get the JSON payload
-        print("Received Data from Devi AI:", data)  # Log full payload
+        data = request.json  # Get full JSON data
+        print("Received Data from Devi AI:", data)  # Debugging line
 
-        post_text = data.get("post_text", "")
-        post_id = data.get("post_id", "")
+        # Extract first item from 'items' array (assuming only one post at a time)
+        if "items" in data and isinstance(data["items"], list) and len(data["items"]) > 0:
+            first_item = data["items"][0]  # Get first post
+            
+            post_text = first_item.get("content", "")  # Extract post content
+            post_id = first_item.get("id", "")  # Extract post ID
 
-        if not post_text or not post_id:
-            return jsonify({"status": "error", "message": "Missing post_text or post_id", "received_data": data}), 400
+            if not post_text or not post_id:
+                return jsonify({"status": "error", "message": "Missing post content or post ID"}), 400
 
-        print(f"Extracted Post: {post_text} | Post ID: {post_id}")
+            print(f"Processed Post: {post_text} | Post ID: {post_id}")  # Log extracted values
 
-        response = jsonify({"status": "success", "message": "Webhook received successfully"})
-        response.headers["Content-Type"] = "application/json"
-        return response, 200
+            return jsonify({"status": "success", "message": "Webhook received successfully", "post_text": post_text, "post_id": post_id}), 200
+
+        return jsonify({"status": "error", "message": "No valid items found in payload"}), 400
 
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
-
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 10000))  # Correct way to bind dynamic port
-    app.run(host="0.0.0.0", port=port, debug=True)
